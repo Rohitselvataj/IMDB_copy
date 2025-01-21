@@ -52,7 +52,7 @@ def search_movie(request):
         )
         
         for movie in movies_cursor:
-            movie['id'] = str(movie['_id'])  #\
+            movie['id'] = str(movie['_id'])  
             movies.append(movie)
 
     client.close()
