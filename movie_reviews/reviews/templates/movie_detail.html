@@ -1,0 +1,14 @@
+<h2>{{ movie.series_title }}</h2>
+<p><strong>Release Year:</strong> {{ movie.released_year }}</p>
+<p><strong>Certificate:</strong> {{ movie.certificate }}</p>
+<p><strong>Runtime:</strong> {{ movie.runtime }}</p>
+<p><strong>Genre:</strong> {{ movie.genre }}</p>
+<p><strong>IMDB Rating:</strong> {{ movie.imdb_rating }}</p>
+<p><strong>Overview:</strong> {{ movie.overview }}</p>
+<p><strong>Meta Score:</strong> {{ movie.meta_score }}</p>
+<p><strong>Director:</strong> {{ movie.director }}</p>
+<p><strong>Stars:</strong> {{ movie.stars|join:', ' }}</p>
+<p><strong>No of Votes:</strong> {{ movie.no_of_votes }}</p>
+<p><strong>Gross:</strong> {{ movie.gross }}</p>
+
+<a href="{% url 'search_movie' %}">Back to Search</a>

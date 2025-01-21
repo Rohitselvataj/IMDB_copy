@@ -1,0 +1,22 @@
+<h2>Search for a Movie</h2>
+<form method="get">
+    <input type="text" name="query" placeholder="Enter movie title" value="{{ query }}" required>
+    <button type="submit">Search</button>
+</form>
+
+{% if movies %}
+    <h3>Search Results:</h3>
+    <ul>
+        {% for movie in movies %}
+            <li>
+                <strong>{{ movie.series_title }}</strong> <br>
+                Genre: {{ movie.genre }} <br>
+                Release Year: {{ movie.released_year }} <br>
+                Overview: {{ movie.overview }} <br>
+                <a href="{% url 'movie_detail' movie.id %}">View Full Details</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% elif query %}
+    <p>No movies found matching "{{ query }}".</p>
+{% endif %}
