@@ -13,7 +13,7 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('movie_list')
+            return redirect('login')
     else:
         form = UserCreationForm()
     return render(request, 'register.html', {'form': form})
@@ -34,15 +34,13 @@ def logout_view(request):
     return redirect('login')
 
 def search_movie(request):
-    # Connect to MongoDB
+
     client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/')
     db = client['movies']
     movies_collection = db['ratiing']
 
-    
     movies = []
 
-    
     query = request.GET.get('query')
     if query:
         
