@@ -7,7 +7,7 @@ from django.conf import settings
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
-
+#command
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
