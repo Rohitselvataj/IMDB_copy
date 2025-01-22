@@ -7,7 +7,7 @@ from django.conf import settings
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from django.http import HttpResponse
-
+MONGODB_URI = 'mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority'
 #command
 def register(request):
     if request.method == 'POST':
@@ -75,6 +75,8 @@ def search_movie(request):
     
     if not movies:
         print("No movies found.")
+    
+    
 
     return render(request, 'search_movie.html', {'movies': movies, 'query': query})
 
@@ -87,6 +89,9 @@ def movie_detail(request, movie_id):
     movie = movies_collection.find_one({"_id": ObjectId(movie_id)})
 
     client.close()
+    
+    if movie is None:
+        return HttpResponse("Movie not found", status=404)
 
     return render(request, 'movie_detail.html', {'movie': movie})
 
@@ -102,7 +107,7 @@ def add_review(request, movie_id):
 def test_mongo_connection(request):
     try:
         # Replace 'mydatabase' with your actual database name
-        client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/mydatabase?retryWrites=true&w=majority')
+        client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority')
         client.close()
         return HttpResponse("Connected to MongoDB")
     except Exception as e:

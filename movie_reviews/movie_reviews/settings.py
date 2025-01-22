@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'reviews'
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -84,12 +84,11 @@ DATABASES = {
     }
 }
 MONGODB_SETTINGS = {
-    'DB_NAME': 'profile',
-    'HOST': 'mongodb://localhost:27017/', 
-    'PORT': 27017,  
+    'DB_NAME': 'movie',
+    'HOST': 'mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority', 
 }
 
-
+MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority&ssl=true')
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
