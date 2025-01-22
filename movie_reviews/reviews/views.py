@@ -6,8 +6,9 @@ from .models import Movie, Review
 from django.conf import settings
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from django.http import HttpResponse
 
-
+#command
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -35,7 +36,7 @@ def logout_view(request):
 
 def search_movie(request):
 
-    client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/')
+    client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority')
     db = client['movies']
     movies_collection = db['ratiing']
 
@@ -43,23 +44,43 @@ def search_movie(request):
 
     query = request.GET.get('query')
     if query:
-        
+        print(f"Searching for: {query}")
         movies_cursor = movies_collection.find(
-            {"series_title": {"$regex": query, "$options": "i"}},
-            {"series_title": 1, "genre": 1, "released_year": 1, "overview": 1}
+            {"Series_title": {"$regex": query, "$options": "i"}},
+            {
+                "Series_Title": 1,
+                "Genre": 1,
+                "Released_Year": 1,
+                "Overview": 1,
+                "Poster_Link": 1,
+                "Certificate": 1,
+                "Runtime": 1,
+                "IMDB_Rating": 1,
+                "Director": 1,
+                "Star1": 1,
+                "Star2": 1,
+                "Star3": 1,
+                "Star4": 1,
+                "No_of_Votes": 1,
+                "Gross": 1
+            }
         )
         
         for movie in movies_cursor:
             movie['id'] = str(movie['_id'])  
             movies.append(movie)
+            print(f"Found movie: {movie['Series_Title']}")
 
     client.close()
+    
+    if not movies:
+        print("No movies found.")
 
     return render(request, 'search_movie.html', {'movies': movies, 'query': query})
 
 def movie_detail(request, movie_id):
 
-    client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/')
+    client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority')
     db = client['movies']
     movies_collection = db['ratiing']
 
@@ -75,6 +96,15 @@ def add_review(request, movie_id):
         rating = request.POST['rating']
         comment = request.POST['comment']
         Review.objects.create(user=request.user, movie=movie, rating=rating, comment=comment)
-        return redirect('movie_detail', pk=movie.id)
+        return redirect('movie_detail', movie_id=movie.id)
     return render(request, 'add_review.html', {'movie': movie})
+
+def test_mongo_connection(request):
+    try:
+        # Replace 'mydatabase' with your actual database name
+        client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/mydatabase?retryWrites=true&w=majority')
+        client.close()
+        return HttpResponse("Connected to MongoDB")
+    except Exception as e:
+        return HttpResponse(f"Error connecting to MongoDB: {e}")
 
