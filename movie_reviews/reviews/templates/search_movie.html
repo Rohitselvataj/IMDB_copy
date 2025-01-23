@@ -31,6 +31,14 @@
         <button type="submit">Submit</button>
     </form>
 
+    <h3>Reviews ({{ review_count }})</h3>
+    <p>Average Rating: {{ average_rating|floatformat:1 }}</p>
+    <ul>
+        {% for review in reviews %}
+            <li><strong>{{ review.user }}:</strong> {{ review.rating }} - {{ review.comment }}</li>
+        {% endfor %}
+    </ul>
+
 {% else %}
     <p>No movies found.</p>
 {% endif %}

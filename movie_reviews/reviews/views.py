@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth import login, logout
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, get_object_or_404
 from .models import Movie, Review
 from django.conf import settings
@@ -17,21 +17,30 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            client = MongoClient('mongodb://localhost:27017/')
+            db = client['movies']
+            user_collection = db['user']
+            user_collection.insert_one({
+                "username": user.username,
+                "password": form.cleaned_data['password1'],  # Store hashed password
+            })
+            client.close()
             return redirect('login')
     else:
         form = UserCreationForm()
+        
+        
     return render(request, 'register.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            user =form.get_user()
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
             login(request, user)
             return redirect('search_movie')
-    else:
-        form = AuthenticationForm()
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'login.html')
 
 def logout_view(request):
     logout(request)
@@ -40,6 +49,9 @@ def logout_view(request):
 def search_movie(request):
     query = request.GET.get('query')
     movie_details = None
+    reviews = []
+    average_rating = 0
+    review_count = 0
     
     
     client = MongoClient('mongodb://localhost:27017/')
@@ -57,6 +69,12 @@ def search_movie(request):
     if movie_details:
         movie_details['_id'] = str(movie_details['_id'])
         
+        reviews = list(review_collection.find({"series_title": movie_details['Series_Title']}))
+        review_count = len(reviews)
+        if review_count > 0:
+            total_rating = sum(int(review['rating']) for review in reviews)
+            average_rating = total_rating / review_count
+        
         if request.method == 'POST':
             rating = request.POST.get('rating')
             comment = request.POST.get('comment')
@@ -72,6 +90,13 @@ def search_movie(request):
         
     
     client.close()
+    return render(request, 'search_movie.html', {
+        'movie': movie_details,
+        'query': query,
+        'reviews': reviews,
+        'average_rating': average_rating,
+        'review_count': review_count,
+    })
 
     return render(request, 'search_movie.html', {'movie': movie_details, 'query': query})
 
@@ -106,6 +131,8 @@ def add_review(request, movie_id):
         form = ReviewForm()
 
     client.close()
+    
+    
     
     return render(request, 'add_review.html', {'movie': movie})
 
