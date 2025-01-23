@@ -41,60 +41,41 @@ def logout_view(request):
 def search_movie(request):
     query = request.GET.get('query')
     movie_details = None
+    form = ReviewForm()
     
     client = MongoClient('mongodb://localhost:27017/')
     db = client['movies']
     movies_collection = db['ratiing']
+    review_collection = db['stars']
     
     if query:
         # Search for movies in the MongoDB collection
         movie_details = movies_collection.find_one({"Series_Title": query})
     else:
         print("No movies found.")
-    client.close()
-    print(movie_details)  # Check the contents of movie_details
+
     
     if movie_details:
         movie_details['_id'] = str(movie_details['_id'])
+        
+        if request.method == 'POST':
+                if form.is_valid():
+                    # Prepare review data
+                    review_data = {
+                        "series_title": movie_details['Series_Title'],
+                        "user": request.user.username,
+                        "rating": form.cleaned_data['rating '],
+                        "comment": form.cleaned_data['comment'],
+                    }
+                    # Insert review into MongoDB
+                    review_collection.insert_one(review_data)
+                    return redirect('search_movie')
+        
     
+    client.close()
 
     return render(request, 'search_movie.html', {'movie': movie_details, 'query': query})
-@login_required
-def movie_detail(request, movie_id):
 
-    client = MongoClient('mongodb://localhost:27017/')
-    db = client['movies']
-    movies_collection = db['ratiing']
-    review_collection = db['stars']
-
-    movie = movies_collection.find_one({"_id": ObjectId(movie_id)})
-    
-    
-    if request.method == 'POST':
-        form = ReviewForm(request.POST)
-        if form.is_valid():
-            # Prepare review data
-            review_data = {
-                "series_title": movie['Series_Title'],
-                "user": request.user.username,
-                "rating": form.cleaned_data['rating'],
-                "comment": form.cleaned_data['comment'],
-            }
-            # Insert review into MongoDB
-            review_collection.insert_one(review_data)
-            return redirect('movie_detail', movie_id=movie_id)  # Redirect to the same movie detail page
-    else:
-        form = ReviewForm()
-
-    # Fetch existing reviews for the movie
-    reviews = review_collection.find({"series_title": movie['Series_Title']})
-
-    client.close()
-    
-    if movie is None:
-        return HttpResponse("Movie not found", status=404)
-
-    return render(request, 'movie_detail.html', {'movie': movie, 'form': form, 'reviews': reviews})
 
 @login_required  # Ensure the user is logged in
 def add_review(request, movie_id):

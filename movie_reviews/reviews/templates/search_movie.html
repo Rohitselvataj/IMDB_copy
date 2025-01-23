@@ -30,18 +30,6 @@
     <button type="submit">Submit Review</button>
 </form>
 
-<h3>Reviews</h3>
-{% for review in reviews %}
-    <div>
-        <p><strong>User:</strong> {{ review.user }}</p>
-        <p><strong>Rating:</strong> {{ review.rating }} Stars</p>
-        <p><strong>Comment:</strong> {{ review.comment }}</p>
-    </div>
-{% empty %}
-    <p>No reviews yet.</p>
-{% endfor %}
-
-<a href="{% url 'search_movie' %}">Back to Search</a>
 
 <h2>Add Review </h2>
 <form method="post">
