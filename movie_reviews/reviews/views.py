@@ -7,8 +7,7 @@ from django.conf import settings
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from django.http import HttpResponse
-from .forms import MovieForm
-from .forms import ReviewForm
+from .forms import MovieForm, ReviewForm
 from django.contrib.auth.decorators import login_required
 
 MONGODB_URI = 'mongodb://localhost:27017/'
@@ -17,7 +16,7 @@ def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
             return redirect('login')
     else:
         form = UserCreationForm()
@@ -27,7 +26,7 @@ def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
-            user = form.get_user()
+            form.get_user()
             login(request, user)
             return redirect('search_movie')
     else:
@@ -41,7 +40,7 @@ def logout_view(request):
 def search_movie(request):
     query = request.GET.get('query')
     movie_details = None
-    form = ReviewForm()
+    
     
     client = MongoClient('mongodb://localhost:27017/')
     db = client['movies']
@@ -59,17 +58,17 @@ def search_movie(request):
         movie_details['_id'] = str(movie_details['_id'])
         
         if request.method == 'POST':
-                if form.is_valid():
-                    # Prepare review data
-                    review_data = {
-                        "series_title": movie_details['Series_Title'],
-                        "user": request.user.username,
-                        "rating": form.cleaned_data['rating '],
-                        "comment": form.cleaned_data['comment'],
-                    }
+            rating = request.POST.get('rating')
+            comment = request.POST.get('comment')
+            review_data = {
+                "series_title": movie_details['Series_Title'],
+                "user": request.user.username,
+                "rating": rating,
+                "comment": comment,
+            }
                     # Insert review into MongoDB
-                    review_collection.insert_one(review_data)
-                    return redirect('search_movie')
+            review_collection.insert_one(review_data)
+            return redirect('search_movie')
         
     
     client.close()
@@ -109,6 +108,8 @@ def add_review(request, movie_id):
     client.close()
     
     return render(request, 'add_review.html', {'movie': movie})
+
+
 def test_mongo_connection(request):
     try:
         # Replace 'mydatabase' with your actual database name
