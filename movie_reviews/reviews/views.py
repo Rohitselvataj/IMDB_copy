@@ -33,52 +33,57 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+MOVIE_DATA = {
+    "The Shawshank Redemption": {
+        "_id": "678f678009a7d281db4b59c0",
+        "Poster_Link": "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNT…",
+        "Series_Title": "The Shawshank Redemption",
+        "Released_Year": 1994,
+        "Certificate": "A",
+        "Runtime": "142 min",
+        "Genre": "Drama",
+        "IMDB_Rating": 9.3,
+        "Overview": "Two imprisoned men bond over a number of years, finding solace and eve…",
+        "Meta_score": 80,
+        "Director": "Frank Darabont",
+        "Star1": "Tim Robbins",
+        "Star2": "Morgan Freeman",
+        "Star3": "Bob Gunton",
+        "Star4": "William Sadler",
+        "No_of_Votes": 2343110,
+        "Gross": "28,341,469"
+    },
+    "The Godfather": {
+        "_id": "678f678009a7d281db4b59c1",
+        "Poster_Link": "https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNW…",
+        "Series_Title": "The Godfather",
+        "Released_Year": 1972,
+        "Certificate": "A",
+        "Runtime": "175 min",
+        "Genre": "Crime, Drama",
+        "IMDB_Rating": 9.2,
+        "Overview": "An organized crime dynasty's aging patriarch transfers control of his …",
+        "Meta_score": 100,
+        "Director": "Francis Ford Coppola",
+        "Star1": "Marlon Brando",
+        "Star2": "Al Pacino",
+        "Star3": "James Caan",
+        "Star4": "Diane Keaton",
+        "No_of_Votes": 1620367,
+        "Gross": "134,966,411"
+    }
+}
 
 def search_movie(request):
-
-    client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority')
-    db = client['movies']
-    movies_collection = db['ratiing']
-
-    movies = []
-
     query = request.GET.get('query')
-    if query:
-        print(f"Searching for: {query}")
-        movies_cursor = movies_collection.find(
-            {"Series_title": {"$regex": query, "$options": "i"}},
-            {
-                "Series_Title": 1,
-                "Genre": 1,
-                "Released_Year": 1,
-                "Overview": 1,
-                "Poster_Link": 1,
-                "Certificate": 1,
-                "Runtime": 1,
-                "IMDB_Rating": 1,
-                "Director": 1,
-                "Star1": 1,
-                "Star2": 1,
-                "Star3": 1,
-                "Star4": 1,
-                "No_of_Votes": 1,
-                "Gross": 1
-            }
-        )
-        
-        for movie in movies_cursor:
-            movie['id'] = str(movie['_id'])  
-            movies.append(movie)
-            print(f"Found movie: {movie['Series_Title']}")
+    movie_details = None
 
-    client.close()
-    
-    if not movies:
+    if query in MOVIE_DATA:
+        movie_details = MOVIE_DATA[query]
+    else:
         print("No movies found.")
-    
-    
 
-    return render(request, 'search_movie.html', {'movies': movies, 'query': query})
+    return render(request, 'search_movie.html', {'movie': movie_details, 'query': query})
 
 def movie_detail(request, movie_id):
 
