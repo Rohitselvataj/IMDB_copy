@@ -7,6 +7,7 @@ from django.conf import settings
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from django.http import HttpResponse
+from .forms import MovieForm
 MONGODB_URI = 'mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority'
 #command
 def register(request):
@@ -33,61 +34,27 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
-MOVIE_DATA = {
-    "The Shawshank Redemption": {
-        "_id": "678f678009a7d281db4b59c0",
-        "Poster_Link": "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNT…",
-        "Series_Title": "The Shawshank Redemption",
-        "Released_Year": 1994,
-        "Certificate": "A",
-        "Runtime": "142 min",
-        "Genre": "Drama",
-        "IMDB_Rating": 9.3,
-        "Overview": "Two imprisoned men bond over a number of years, finding solace and eve…",
-        "Meta_score": 80,
-        "Director": "Frank Darabont",
-        "Star1": "Tim Robbins",
-        "Star2": "Morgan Freeman",
-        "Star3": "Bob Gunton",
-        "Star4": "William Sadler",
-        "No_of_Votes": 2343110,
-        "Gross": "28,341,469"
-    },
-    "The Godfather": {
-        "_id": "678f678009a7d281db4b59c1",
-        "Poster_Link": "https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNW…",
-        "Series_Title": "The Godfather",
-        "Released_Year": 1972,
-        "Certificate": "A",
-        "Runtime": "175 min",
-        "Genre": "Crime, Drama",
-        "IMDB_Rating": 9.2,
-        "Overview": "An organized crime dynasty's aging patriarch transfers control of his …",
-        "Meta_score": 100,
-        "Director": "Francis Ford Coppola",
-        "Star1": "Marlon Brando",
-        "Star2": "Al Pacino",
-        "Star3": "James Caan",
-        "Star4": "Diane Keaton",
-        "No_of_Votes": 1620367,
-        "Gross": "134,966,411"
-    }
-}
 
 def search_movie(request):
     query = request.GET.get('query')
     movie_details = None
-
-    if query in MOVIE_DATA:
-        movie_details = MOVIE_DATA[query]
+    
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['movies']
+    movies_collection = db['ratiing']
+    
+    if query:
+        # Search for movies in the MongoDB collection
+        movie_details = movies_collection.find_one({"Series_Title": query})
     else:
         print("No movies found.")
+    client.close()
 
     return render(request, 'search_movie.html', {'movie': movie_details, 'query': query})
 
 def movie_detail(request, movie_id):
 
-    client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority')
+    client = MongoClient('mongodb://localhost:27017/')
     db = client['movies']
     movies_collection = db['ratiing']
 
