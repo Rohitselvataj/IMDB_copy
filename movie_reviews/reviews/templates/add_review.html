@@ -1,4 +1,5 @@
-<h2>Add Review for {{ movie.title }}</h2>
+<!-- add_review.html -->
+<h2>Add Review for {{ movie['Series_Title'] }}</h2>
 <form method="post">
     {% csrf_token %}
     <label for="rating">Rating (1-5):</label>
@@ -9,3 +10,5 @@
     <br>
     <button type="submit">Submit</button>
 </form>
+
+<a href="{% url 'movie_detail' movie_id=movie['_id'] %}">Back to Movie Details</a>

@@ -18,3 +18,6 @@ class MovieForm(forms.Form):
     gross = forms.CharField(max_length=20)
     poster_link = forms.URLField()
     
+class ReviewForm(forms.Form):
+    rating = forms.ChoiceField(choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')])
+    comment = forms.CharField(widget=forms.Textarea, required=False)

@@ -11,4 +11,22 @@
 <p><strong>No of Votes:</strong> {{ movie.No_of_Votes }}</p>
 <p><strong>Gross:</strong> {{ movie.Gross }}</p>
 
+<h3>Add a Review</h3>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Review</button>
+</form>
+
+<h3>Reviews</h3>
+{% for review in reviews %}
+    <div>
+        <p><strong>User:</strong> {{ review.user }}</p>
+        <p><strong>Rating:</strong> {{ review.rating }} Stars</p>
+        <p><strong>Comment:</strong> {{ review.comment }}</p>
+    </div>
+{% empty %}
+    <p>No reviews yet.</p>
+{% endfor %}
+
 <a href="{% url 'search_movie' %}">Back to Search</a>

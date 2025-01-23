@@ -85,7 +85,7 @@ DATABASES = {
 }
 MONGODB_SETTINGS = {
     'DB_NAME': 'movie',
-    'HOST': 'mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority', 
+    'HOST': 'mongodb://localhost:27017/', 
 }
 
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority&ssl=true')

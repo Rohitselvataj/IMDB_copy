@@ -8,7 +8,10 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from django.http import HttpResponse
 from .forms import MovieForm
-MONGODB_URI = 'mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority'
+from .forms import ReviewForm
+from django.contrib.auth.decorators import login_required
+
+MONGODB_URI = 'mongodb://localhost:27017/'
 #command
 def register(request):
     if request.method == 'POST':
@@ -49,37 +52,86 @@ def search_movie(request):
     else:
         print("No movies found.")
     client.close()
+    print(movie_details)  # Check the contents of movie_details
+    
+    if movie_details:
+        movie_details['_id'] = str(movie_details['_id'])
+    
 
     return render(request, 'search_movie.html', {'movie': movie_details, 'query': query})
-
+@login_required
 def movie_detail(request, movie_id):
 
     client = MongoClient('mongodb://localhost:27017/')
     db = client['movies']
     movies_collection = db['ratiing']
+    review_collection = db['stars']
 
     movie = movies_collection.find_one({"_id": ObjectId(movie_id)})
+    
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            # Prepare review data
+            review_data = {
+                "series_title": movie['Series_Title'],
+                "user": request.user.username,
+                "rating": form.cleaned_data['rating'],
+                "comment": form.cleaned_data['comment'],
+            }
+            # Insert review into MongoDB
+            review_collection.insert_one(review_data)
+            return redirect('movie_detail', movie_id=movie_id)  # Redirect to the same movie detail page
+    else:
+        form = ReviewForm()
+
+    # Fetch existing reviews for the movie
+    reviews = review_collection.find({"series_title": movie['Series_Title']})
 
     client.close()
     
     if movie is None:
         return HttpResponse("Movie not found", status=404)
 
-    return render(request, 'movie_detail.html', {'movie': movie})
+    return render(request, 'movie_detail.html', {'movie': movie, 'form': form, 'reviews': reviews})
 
+@login_required  # Ensure the user is logged in
 def add_review(request, movie_id):
-    movie = get_object_or_404(Movie, id=movie_id)
+    # Connect to MongoDB
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['movies']
+    review_collection = db['stars']  # Assuming 'stars' is your collection for reviews
+
+    # Fetch the movie by its ObjectId
+    movie = db['ratiing'].find_one({"_id": ObjectId(movie_id)})
+
     if request.method == 'POST':
         rating = request.POST['rating']
         comment = request.POST['comment']
-        Review.objects.create(user=request.user, movie=movie, rating=rating, comment=comment)
-        return redirect('movie_detail', movie_id=movie.id)
-    return render(request, 'add_review.html', {'movie': movie})
+        
+        # Prepare review data
+        review_data = {
+            "series_title": movie['Series_Title'],  # Use Series_Title to associate the review
+            "user": request.user.username,  # Store the username
+            "rating": rating,
+            "comment": comment,
+        }
+        
+        # Insert review into MongoDB
+        review_collection.insert_one(review_data)
+        return redirect('movie_detail', movie_id=movie_id)  # Redirect to the movie detail page
+    else:
+        # If GET request, create an empty form
+        form = ReviewForm()
 
+    client.close()
+    
+    return render(request, 'add_review.html', {'movie': movie})
 def test_mongo_connection(request):
     try:
         # Replace 'mydatabase' with your actual database name
-        client = MongoClient('mongodb+srv://rohit:Rohit2004@cluster0.oxj1e.mongodb.net/movies?retryWrites=true&w=majority')
+        client = MongoClient('mongodb://localhost:27017/')
         client.close()
         return HttpResponse("Connected to MongoDB")
     except Exception as e:

@@ -1,4 +1,5 @@
 <form method="GET" action="{% url 'search_movie' %}">
+    {% csrf_token %}
     <input type="text" name="query" placeholder="Search for a movie..." value="{{ query }}">
     <button type="submit">Search</button>
 </form>
@@ -17,6 +18,40 @@
     <p><strong>Stars:</strong> {{ movie.Star1 }}, {{ movie.Star2 }}, {{ movie.Star3 }}, {{ movie.Star4 }}</p>
     <p><strong>No of Votes:</strong> {{ movie.No_of_Votes }}</p>
     <p><strong>Gross:</strong> {{ movie.Gross }}</p>
+    
 {% else %}
     <p>No movies found.</p>
 {% endif %}
+
+<h3>Add a Review</h3>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Review</button>
+</form>
+
+<h3>Reviews</h3>
+{% for review in reviews %}
+    <div>
+        <p><strong>User:</strong> {{ review.user }}</p>
+        <p><strong>Rating:</strong> {{ review.rating }} Stars</p>
+        <p><strong>Comment:</strong> {{ review.comment }}</p>
+    </div>
+{% empty %}
+    <p>No reviews yet.</p>
+{% endfor %}
+
+<a href="{% url 'search_movie' %}">Back to Search</a>
+
+<h2>Add Review </h2>
+<form method="post">
+    {% csrf_token %}
+    <label for="rating">Rating (1-5):</label>
+    <input type="number" name="rating" min="1" max="5" required>
+    <br>
+    <label for="comment">Comment:</label>
+    <textarea name="comment" required></textarea>
+    <br>
+    <button type="submit">Submit</button>
+</form>
+
